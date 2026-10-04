@@ -1,0 +1,55 @@
+name: gestion-projets
+
+services:
+
+  # ---------------- Base de données ----------------
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: test_db
+    volumes:
+      - mysql_data:/var/lib/mysql          # volume persistant
+    networks:
+      - app-network
+    healthcheck:                           # "prêt" = MySQL répond vraiment
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # ---------------- Backend Spring Boot ----------------
+  backend:
+    build: ./backend
+    environment:
+      # Surcharge de application.properties : "localhost" -> "mysql"
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/test_db?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false"
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    ports:
+      - "8089:8080"                        # 8080 de la VM est déjà pris par Jenkins
+    depends_on:
+      mysql:
+        condition: service_healthy         # démarre APRÈS que MySQL soit prêt
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # ---------------- Frontend Angular + nginx ----------------
+  frontend:
+    build: ./frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend                            # démarre APRÈS le backend
+    networks:
+      - app-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+
+networks:
+  app-network:
+    driver: bridge
