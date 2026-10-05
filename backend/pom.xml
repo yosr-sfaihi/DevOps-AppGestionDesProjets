@@ -60,6 +60,16 @@
     </dependencies>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <!-- AJOUT 4 : plugin SonarQube pour Maven (permet "mvn sonar:sonar") -->
+                <plugin>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                    <version>5.1.0.4751</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <!-- AJOUT 3 : JaCoCo, mesure de la couverture de code pour SonarQube -->
             <plugin>
