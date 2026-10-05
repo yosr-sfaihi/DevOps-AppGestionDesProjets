@@ -6,7 +6,7 @@ WORKDIR /app
 # Copier d'abord package*.json : Docker met en cache "npm ci"
 # tant que les dépendances ne changent pas
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --no-audit --no-fund --fetch-retries=5 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000 --fetch-timeout=300000
 
 # Copier le reste du code puis compiler en mode production
 COPY . .
